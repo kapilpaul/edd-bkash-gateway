@@ -46,7 +46,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once __DIR__ . '/vendor/autoload.php';
 
 //checking edd is active or not
-if ( ! in_array( 'easy-digital-downloads/easy-digital-downloads.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
+if ( ! get_edd_status() ) {
     return;
 }
 
@@ -241,7 +241,7 @@ final class DCoders_EDD_Bkash {
      */
     public function init_classes() {
         if ( $this->is_request( 'ajax' ) ) {
-            // $this->container['ajax'] =  new DC\EDD\Bkash\Ajax();
+            $this->container['ajax'] = new DC\EDD\Bkash\Frontend\Ajax();
         }
 
         $this->container['api']    = new DC\EDD\Bkash\Api();

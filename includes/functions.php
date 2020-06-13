@@ -2,24 +2,22 @@
 /**
  * Insert a new transaction
  *
- * @param  array  $args
+ * @param array $args
  *
  * @return int|WP_Error
  */
 function dc_edd_bkash_insert_transaction( $args = [] ) {
     global $wpdb;
 
-    
-    
     $defaults = [
-        'payment_id' => '',
-        'trx_id' => '',
+        'payment_id'         => '',
+        'trx_id'             => '',
         'transaction_status' => '',
-        'invoice_number' => '',
-        'order_number' => '',
-        'amount' => '',
-        'created_at' => '',
-        'updated_at' => '',
+        'invoice_number'     => '',
+        'order_number'       => '',
+        'amount'             => '',
+        'created_at'         => '',
+        'updated_at'         => '',
     ];
 
     $data = wp_parse_args( $args, $defaults );
@@ -80,7 +78,7 @@ function dc_edd_bkash_insert_transaction( $args = [] ) {
 /**
  * Fetch transactions
  *
- * @param  array  $args
+ * @param array $args
  *
  * @return array
  */
@@ -101,10 +99,10 @@ function dc_edd_bkash_get_transactions( $args = [] ) {
     $cache_key    = "all:$key:$last_changed";
 
     $sql = $wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}dc_edd_bkash_transactions
+        "SELECT * FROM {$wpdb->prefix}dc_edd_bkash_transactions
             ORDER BY {$args['orderby']} {$args['order']}
             LIMIT %d, %d",
-            $args['offset'], $args['number']
+        $args['offset'], $args['number']
     );
 
     $items = wp_cache_get( $cache_key, 'dc_edd_bkash_transactions' );
@@ -140,7 +138,7 @@ function dc_edd_bkash_transaction_count() {
 /**
  * Fetch a single transaction from the DB
  *
- * @param  int $id
+ * @param int $id
  *
  * @return object
  */
@@ -163,7 +161,7 @@ function dc_edd_bkash_get_transaction( $id ) {
 /**
  * Delete an transaction
  *
- * @param  int $id
+ * @param int $id
  *
  * @return int|boolean
  */
@@ -195,13 +193,14 @@ function dc_edd_bkash_delete_multiple_transactions( array $ids ) {
     }
 
     $ids = implode( ',', $ids );
+
     return $wpdb->query( "DELETE FROM {$table_name} WHERE ID IN($ids)" );
 }
 
 /**
  * Purge the cache for dc_edd_bkash_transactions items
  *
- * @param  int $item_id
+ * @param int $item_id
  *
  * @return void
  */
@@ -214,5 +213,18 @@ function dc_edd_bkash_transaction_purge_cache( $item_id = null ) {
 
     wp_cache_delete( 'count', $group );
     wp_cache_set( 'last_changed', microtime(), $group );
+}
+
+/**
+ * check Easy Digital Downloads active status
+ *
+ * @return bool
+ */
+function get_edd_status() {
+    if ( ! in_array( 'easy-digital-downloads/easy-digital-downloads.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
+        return false;
+    }
+
+    return true;
 }
 

@@ -23,7 +23,7 @@ class Bkash_Gateway {
         add_action( 'edd_gateway_dc_bkash', [ $this, 'edd_process_bkash_payment' ] );
         add_filter( 'edd_settings_sections_gateways', [ $this, 'edd_register_bkash_gateway_section' ] );
         add_filter( 'edd_settings_gateways', [ $this, 'edd_register_bkash_gateway_settings' ] );
-        add_filter( 'edd_settings_gateways', [ $this, 'edd_register_bkash_gateway_settings' ] );
+        add_action( 'wp_enqueue_scripts', [ $this, 'payment_scripts' ] );
     }
 
     /**
@@ -66,28 +66,28 @@ class Bkash_Gateway {
                 'name' => __( 'Username', 'dc-edd-bkash' ),
                 'desc' => __( 'Your bKash username. ', 'dc-edd-bkash' ),
                 'type' => 'text',
-                'size' => 'regular'
+                'size' => 'regular',
             ],
             'dc_bkash_password'     => [
                 'id'   => 'dc_bkash_password',
                 'name' => __( 'Password', 'dc-edd-bkash' ),
                 'desc' => __( 'Your bKash password.', 'dc-edd-bkash' ),
                 'type' => 'text',
-                'size' => 'regular'
+                'size' => 'regular',
             ],
             'dc_bkash_app_key'      => [
                 'id'   => 'dc_bkash_app_key',
                 'name' => __( 'App Key', 'dc-edd-bkash' ),
                 'desc' => __( 'bKash App Key', 'dc-edd-bkash' ),
                 'type' => 'text',
-                'size' => 'regular'
+                'size' => 'regular',
             ],
             'dc_bkash_app_password' => [
                 'id'   => 'dc_bkash_app_password',
                 'name' => __( 'App Password', 'dc-edd-bkash' ),
                 'desc' => __( 'bKash App Password', 'dc-edd-bkash' ),
                 'type' => 'text',
-                'size' => 'regular'
+                'size' => 'regular',
             ],
         ];
 
@@ -106,12 +106,17 @@ class Bkash_Gateway {
      */
     public function edd_process_bkash_payment( $purchase_data ) {
         if ( ! wp_verify_nonce( $purchase_data['gateway_nonce'], 'edd-gateway' ) ) {
-            wp_die( __( 'Nonce verification has failed', 'dc-edd-bkash' ), __( 'Error', 'dc-edd-bkash' ), array( 'response' => 403 ) );
+            wp_die(
+                __( 'Nonce verification has failed', 'dc-edd-bkash' ),
+                __( 'Error', 'dc-edd-bkash' ),
+                [ 'response' => 403 ]
+            );
         }
 
         global $edd_options;
-        echo "<pre>";
-        print_r( $purchase_data );
+//        echo "<pre>";
+//        print_r( $purchase_data );
+//        edd_send_to_success_page();
     }
 
     /**
@@ -140,5 +145,40 @@ class Bkash_Gateway {
         $payment = edd_insert_payment( $payment_data );
 
         return $payment;
+    }
+
+    /**
+     * include payment scripts
+     *
+     * @return void
+     */
+    public function payment_scripts() {
+        if ( edd_is_checkout() ) {
+            wp_enqueue_script( 'edd-bkash-js' );
+        }
+
+        $this->localizeScripts();
+    }
+
+    /**
+     * localize scripts and pass data to js
+     *
+     * @return void
+     */
+    public function localizeScripts() {
+        global $edd_options;
+
+        if ( $edd_options['dc_bkash_test_mode'] ) {
+            $script = "https://scripts.sandbox.bka.sh/versions/1.2.0-beta/checkout/bKash-checkout-sandbox.js";
+        } else {
+            $script = "https://scripts.pay.bka.sh/versions/1.2.0-beta/checkout/bKash-checkout.js";
+        }
+
+        $data = [
+            'nonce'      => wp_create_nonce( 'dc-edd-bkash-nonce' ),
+            'script_url' => $script,
+        ];
+
+        wp_localize_script( 'edd-bkash-js', 'dc_edd_bkash', $data );
     }
 }

@@ -71,7 +71,7 @@ class Assets {
             'edd-bkash-js' => [
                 'src'       => $plugin_js_assets_path . 'edd_bkash.js',
                 'version'   => filemtime( DC_EDD_BKASH_PATH . '/assets/js/edd_bkash.js' ),
-                 'deps'      => [],
+                'deps'      => [],
                 'in_footer' => true,
             ],
         ];
@@ -88,7 +88,7 @@ class Assets {
         $plugin_css_assets_path = DC_EDD_BKASH_ASSETS . '/css/';
 
         $styles = [
-            
+
         ];
 
         return $styles;
