@@ -1,0 +1,22 @@
+{
+    "name": "kapilpaul/dc-edd-bkash-payment",
+    "description": "bKash payment gateway for Easy Digital Downloads.",
+    "type": "wordpress-plugin",
+    "license": "GPLv2",
+    "authors": [
+        {
+            "name": "Kapil Paul",
+            "email": "kapilpaul007@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "DC\\EDD\\Bkash\\": "includes/"
+        },
+        "files": [
+            "includes/functions.php"
+        ]
+    }
+}
