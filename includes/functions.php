@@ -16,8 +16,6 @@ function dc_edd_bkash_insert_transaction( $args = [] ) {
         'invoice_number'     => '',
         'order_number'       => '',
         'amount'             => '',
-        'created_at'         => '',
-        'updated_at'         => '',
     ];
 
     $data = wp_parse_args( $args, $defaults );
@@ -38,8 +36,6 @@ function dc_edd_bkash_insert_transaction( $args = [] ) {
                 '%s',
                 '%s',
                 '%s',
-                '%s',
-                '%s',
             ],
             [ '%d' ]
         );
@@ -54,8 +50,6 @@ function dc_edd_bkash_insert_transaction( $args = [] ) {
             $wpdb->prefix . 'dc_edd_bkash_transactions',
             $data,
             [
-                '%s',
-                '%s',
                 '%s',
                 '%s',
                 '%s',

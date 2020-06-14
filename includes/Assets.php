@@ -88,7 +88,11 @@ class Assets {
         $plugin_css_assets_path = DC_EDD_BKASH_ASSETS . '/css/';
 
         $styles = [
-
+            'bkash-style' => [
+                'src'     => $plugin_css_assets_path . 'bkash.css',
+                'deps'    => [],
+                'version' => filemtime( DC_EDD_BKASH_PATH . '/assets/css/bkash.css' ),
+            ],
         ];
 
         return $styles;

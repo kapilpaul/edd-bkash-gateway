@@ -152,21 +152,10 @@ class BkashProcessor {
      * verify payment on bKash end
      *
      * @param $paymentID
-     * @param $orderTotal
      *
      * @return bool|mixed|string
      */
-    public static function verify_payment( $paymentID, $orderTotal ) {
-        if ( self::check_test_mode() ) {
-            return [
-                'amount'                => $orderTotal,
-                'paymentID'             => $paymentID,
-                'trxID'                 => $paymentID,
-                'transactionStatus'     => 'completed',
-                'merchantInvoiceNumber' => 'test-invoice-number',
-            ];
-        }
-
+    public static function verify_payment( $paymentID ) {
         if ( $token = self::get_token() ) {
             $url      = self::payment_query_url() . $paymentID;
             $response = wp_remote_get( $url, self::get_authorization_header() );

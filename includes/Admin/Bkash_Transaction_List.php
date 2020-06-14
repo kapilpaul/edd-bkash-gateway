@@ -38,14 +38,14 @@ class Bkash_Transaction_List extends \WP_List_Table {
      */
     public function get_columns() {
         return [
-            'cb' => '<input type="checkbox" />',
-            'payment_id' => __( 'Payment id', 'dc-edd-bkash' ),
-            'trx_id' => __( 'Trx id', 'dc-edd-bkash' ),
+            'cb'                 => '<input type="checkbox" />',
+            'payment_id'         => __( 'Payment id', 'dc-edd-bkash' ),
+            'trx_id'             => __( 'Trx id', 'dc-edd-bkash' ),
             'transaction_status' => __( 'Transaction status', 'dc-edd-bkash' ),
-            'invoice_number' => __( 'Invoice number', 'dc-edd-bkash' ),
-            'order_number' => __( 'Order number', 'dc-edd-bkash' ),
-            'amount' => __( 'Amount', 'dc-edd-bkash' ),
-            'created_at' => __( 'Created at', 'dc-edd-bkash' ),
+            'invoice_number'     => __( 'Invoice number', 'dc-edd-bkash' ),
+            'order_number'       => __( 'Order number', 'dc-edd-bkash' ),
+            'amount'             => __( 'Amount', 'dc-edd-bkash' ),
+            'created_at'         => __( 'Created at', 'dc-edd-bkash' ),
         ];
     }
 
@@ -67,7 +67,7 @@ class Bkash_Transaction_List extends \WP_List_Table {
      */
     public function get_bulk_actions() {
         $actions = array(
-            'trash'  => __( 'Move to Trash', 'dc-edd-bkash' ),
+            'trash' => __( 'Move to Trash', 'dc-edd-bkash' ),
         );
 
         return $actions;
@@ -76,8 +76,8 @@ class Bkash_Transaction_List extends \WP_List_Table {
     /**
      * Default column values
      *
-     * @param  object $item
-     * @param  string $column_name
+     * @param object $item
+     * @param string $column_name
      *
      * @return string
      */
@@ -91,25 +91,25 @@ class Bkash_Transaction_List extends \WP_List_Table {
     /**
      * Render the "payment_id" column
      *
-     * @param  object $item
+     * @param object $item
      *
      * @return string
      */
     public function column_payment_id( $item ) {
-        return $this->get_column_actions($item, 'payment_id');
+        return $this->get_column_actions( $item, 'payment_id' );
     }
 
     /**
-     * get column actions 
-     * 
+     * get column actions
+     *
      * @param object $item
-     * 
-     * @return string 
+     *
+     * @param $column_name
+     *
+     * @return string
      */
     public function get_column_actions( $item, $column_name ) {
         $actions = [];
-
-        $actions['edit']   = sprintf( '<a href="%s" title="%s">%s</a>', admin_url( 'admin.php?page=dc-edd-bkash&action=edit&id=' . $item->id ), $item->id, __( 'Edit', 'dc-edd-bkash' ), __( 'Edit', 'dc-edd-bkash' ) );
 
         $actions['delete'] = sprintf(
             '<a href="%s" class="submitdelete" data-id="%d" title="%s">%s</a>',
@@ -132,7 +132,7 @@ class Bkash_Transaction_List extends \WP_List_Table {
     /**
      * Render the "cb" column
      *
-     * @param  object $item
+     * @param object $item
      *
      * @return string
      */
@@ -151,6 +151,7 @@ class Bkash_Transaction_List extends \WP_List_Table {
         $column   = $this->get_columns();
         $hidden   = [];
         $sortable = $this->get_sortable_columns();
+        $this->process_bulk_action();
 
         $this->_column_headers = [ $column, $hidden, $sortable ];
 
@@ -165,7 +166,7 @@ class Bkash_Transaction_List extends \WP_List_Table {
 
         if ( isset( $_REQUEST['orderby'] ) && isset( $_REQUEST['order'] ) ) {
             $args['orderby'] = $_REQUEST['orderby'];
-            $args['order']   = $_REQUEST['order'] ;
+            $args['order']   = $_REQUEST['order'];
         }
 
         $this->items = dc_edd_bkash_get_transactions( $args );
@@ -174,8 +175,6 @@ class Bkash_Transaction_List extends \WP_List_Table {
             'total_items' => dc_edd_bkash_transaction_count(),
             'per_page'    => $per_page
         ] );
-
-        $this->process_bulk_action();
     }
 
     /**
@@ -198,15 +197,13 @@ class Bkash_Transaction_List extends \WP_List_Table {
         switch ( $action ) {
             case 'trash':
                 if ( dc_edd_bkash_delete_multiple_transactions( $_POST['transaction_id'] ) ) {
-                    $redirected_to = admin_url( 'admin.php?page=dc-edd-bkash&transaction-deleted=true' );
-                    wp_redirect( $redirected_to );
+                    $this->success_notice( 'Transactions has been deleted' );
                 }
 
                 break;
             case 'delete':
-                if ( dc_edd_bkash_delete_transaction( sanitize_text_field( $_GET['id'] ) ) ) {
-                    $redirected_to = admin_url( 'admin.php?page=dc-edd-bkash&transaction-deleted=true' );
-                    wp_redirect( $redirected_to );
+                if ( dc_edd_bkash_delete_transaction( sanitize_text_field( $_REQUEST['id'] ) ) ) {
+                    $this->success_notice( 'Transaction has been deleted' );
                 }
 
                 break;
@@ -217,5 +214,18 @@ class Bkash_Transaction_List extends \WP_List_Table {
         }
 
         return;
+    }
+
+    /**
+     * Print success message on the page
+     *
+     * @param $message
+     *
+     * @return void
+     */
+    public function success_notice( $message ) {
+        $class   = 'notice notice-success';
+        $message = sprintf( __( '%s', 'dc-edd-bkash' ), $message );
+        printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), esc_html( $message ) );
     }
 }

@@ -22,7 +22,6 @@ class Menu {
      * @return void
      */
     public function admin_menu() {
-        $parent_slug = 'DC EDD bKash Payment';
         $capability  = 'manage_options';
 
         $hook = add_menu_page( __( 'bKash Transactions for EDD', 'dc-edd-bkash' ), __( 'EDD bKash', 'dc-edd-bkash' ),

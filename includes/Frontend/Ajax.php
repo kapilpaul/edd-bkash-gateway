@@ -2,6 +2,7 @@
 
 namespace DC\EDD\Bkash\Frontend;
 
+use DC\EDD\Bkash\EasyDigitalDownloads\BkashProcessor;
 use EDD_Customer;
 use EDD_Payment;
 
@@ -35,18 +36,18 @@ class Ajax {
 
             $order_number = ( isset( $_POST['order_number'] ) ) ? sanitize_key( $_POST['order_number'] ) : '';
 
-            $order = edd_get_download( $order_number );
+            $order = edd_get_payment( $order_number );
 
-            if ( ! is_object( $order ) ) {
-                $this->send_json_error( 'Wrong or invalid order ID' );
+            if ( $order ) {
+                $price = edd_get_payment_amount( $order_number );
+
+                $payment_process = BkashProcessor::create_payment( $price, "INV-" . $order_number );
+
+                if ( $payment_process ) {
+                    wp_send_json_success( $payment_process );
+                }
             }
-
-//            $payment_process = PaymentProcessor::checkout( $order->get_id(), $order->get_total() );
-//
-//            $url = $payment_process['status'] == 'success' ? $payment_process['url'] : $order->get_checkout_payment_url();
-//
-//            wp_send_json_success( esc_url_raw( $url ) );
-
+            $this->send_json_error( 'Error in creating payment request' );
         } catch ( \Exception $e ) {
             $this->send_json_error( $e->getMessage() );
         }
@@ -70,24 +71,89 @@ class Ajax {
             $payment_id   = ( isset( $_POST['payment_id'] ) ) ? sanitize_text_field( $_POST['payment_id'] ) : '';
             $order_number = ( isset( $_POST['order_number'] ) ) ? sanitize_text_field( $_POST['order_number'] ) : '';
 
-            $order = edd_get_download( $order_number );
+            $order = edd_get_payment( $order_number );
 
-//            if ( ! is_object( $order ) ) {
-//                $this->send_json_error( 'Wrong or invalid order ID' );
-//            }
+            if ( $order ) {
+                $execute = BkashProcessor::execute_payment( $payment_id );
 
-//            $response = BkashQuery::executePayment( $payment_id );
+                if ( $execute ) {
+                    $this->payment_store( $execute['paymentID'], $order_number, $execute );
+                    $execute['order_success_url'] = edd_get_success_page_uri();
+                    wp_send_json_success( $execute );
+                }
+            }
 
-//            if ( $response ) {
-//                $this->payment_store( $response['paymentID'], $order_number, $response );
-//                $response['order_success_url'] = $order->get_checkout_order_received_url();
-//                wp_send_json_success( $response );
-//            }
-//
-//            $this->send_json_error( 'Something went wrong!' );
-
+            $this->send_json_error( 'Error in executing payment request' );
         } catch ( \Exception $e ) {
             $this->send_json_error( $e->getMessage() );
+        }
+    }
+
+    /**
+     * Store the payment and insert and validation on bKash end by payment id
+     *
+     * @param $payment_id
+     *
+     * @param $order_number
+     *
+     * @param bool $bkash_response_data
+     *
+     * @return bool
+     */
+    public function payment_store( $payment_id, $order_number, $bkash_response_data ) {
+        try {
+            $payment_id                    = sanitize_text_field( $payment_id );
+            $order                         = edd_get_payment( $order_number );
+            $bkash_response_data['trxID']  = sanitize_text_field( $bkash_response_data['trxID'] );
+            $bkash_response_data['amount'] = sanitize_text_field( $bkash_response_data['amount'] );
+
+            if ( $order ) {
+                $orderGrandTotal = edd_get_payment_amount( $order_number );
+
+                if ( $bkash_response_data['amount'] == $orderGrandTotal ) {
+                    //insert edd note
+                    edd_insert_payment_note(
+                        $order_number,
+                        sprintf( __( 'bKash payment completed. Transaction ID #%s! Amount: %s', 'dc-edd-bkash' ),
+                            $bkash_response_data['trxID'],
+                            $orderGrandTotal
+                        ) );
+
+                    edd_update_payment_status( $order_number );
+
+                    $order->add_meta( 'edd_bkash_trx_id', $bkash_response_data['trxID'], true );
+                } else {
+                    edd_insert_payment_note(
+                        $order_number,
+                        sprintf( __( 'Partial payment has been made. Transaction ID #%s! Amount: %s', 'dc-edd-bkash' ),
+                            $bkash_response_data['trxID'],
+                            $orderGrandTotal
+                        ) );
+                }
+
+                //verify payment
+                $paymentInfo = BkashProcessor::verify_payment( $payment_id );
+
+                if ( isset( $paymentInfo['transactionStatus'] ) && isset( $paymentInfo['trxID'] ) ) {
+                } else {
+                    $paymentInfo = $bkash_response_data;
+                }
+
+                $insertData = [
+                    "order_number"       => sanitize_text_field( $order_number ),
+                    "payment_id"         => sanitize_text_field( $paymentInfo['paymentID'] ),
+                    "trx_id"             => sanitize_text_field( $paymentInfo['trxID'] ),
+                    "transaction_status" => sanitize_text_field( $paymentInfo['transactionStatus'] ),
+                    "invoice_number"     => sanitize_text_field( $paymentInfo['merchantInvoiceNumber'] ),
+                    "amount"             => sanitize_text_field( $paymentInfo['amount'] ),
+                ];
+
+                if ( dc_edd_bkash_insert_transaction( $insertData ) ) {
+                    return true;
+                }
+            }
+        } catch ( \Exception $e ) {
+            return false;
         }
     }
 

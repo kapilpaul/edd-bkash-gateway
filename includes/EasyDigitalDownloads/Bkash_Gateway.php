@@ -20,9 +20,10 @@ class Bkash_Gateway {
     public function __construct() {
         $this->code = 'dc_bkash';
 
-        add_action( 'edd_gateway_dc_bkash', [ $this, 'edd_process_bkash_payment' ] );
         add_filter( 'edd_settings_sections_gateways', [ $this, 'edd_register_bkash_gateway_section' ] );
         add_filter( 'edd_settings_gateways', [ $this, 'edd_register_bkash_gateway_settings' ] );
+
+        add_action( 'edd_gateway_dc_bkash', [ $this, 'edd_process_bkash_payment' ] );
         add_action( 'wp_enqueue_scripts', [ $this, 'payment_scripts' ] );
     }
 
@@ -116,10 +117,7 @@ class Bkash_Gateway {
         }
 
         $payment = $this->insert_edd_payment( $purchase_data );
-//        edd_update_payment_status( $payment );
-
-//        edd_insert_payment_note($payment, 'test bKash trx id: ssdd');
-        wp_send_json_success(['payment' => $payment]);
+        wp_send_json_success( [ 'payment' => $payment, 'amount' => $purchase_data['price'] ] );
     }
 
     /**
@@ -157,6 +155,7 @@ class Bkash_Gateway {
      */
     public function payment_scripts() {
         if ( edd_is_checkout() ) {
+            wp_enqueue_style( 'bkash-style' );
             wp_enqueue_script( 'edd-bkash-js' );
         }
 
