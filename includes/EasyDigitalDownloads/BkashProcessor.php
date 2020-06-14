@@ -93,12 +93,12 @@ class BkashProcessor {
             return $token;
         }
 
-        $user_name = self::edd_get_option( 'dc_bkash_username' );
-        $password  = self::edd_get_option( 'dc_bkash_password' );
+        $user_name = edd_get_option( 'dc_bkash_username' );
+        $password  = edd_get_option( 'dc_bkash_password' );
 
         $data = [
-            "app_key"    => self::edd_get_option( 'dc_bkash_app_key' ),
-            "app_secret" => self::edd_get_option( 'dc_bkash_app_secret' ),
+            "app_key"    => edd_get_option( 'dc_bkash_app_key' ),
+            "app_secret" => edd_get_option( 'dc_bkash_app_secret' ),
         ];
 
         $headers = [
@@ -247,7 +247,7 @@ class BkashProcessor {
         if ( $token = self::get_token() ) {
             $headers = [
                 "Authorization" => "Bearer {$token}",
-                "X-App-Key"     => self::edd_get_option( 'dc_bkash_app_key' ),
+                "X-App-Key"     => edd_get_option( 'dc_bkash_app_key' ),
                 "Content-Type"  => 'application/json',
             ];
 
@@ -265,25 +265,8 @@ class BkashProcessor {
      * @return bool
      */
     public static function check_test_mode() {
-        if ( self::edd_get_option( 'dc_bkash_test_mode' ) ) {
+        if ( edd_get_option( 'dc_bkash_test_mode' ) ) {
             return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Get edd option value by key
-     *
-     * @param $key
-     *
-     * @return bool
-     */
-    public static function edd_get_option( $key ) {
-        global $edd_options;
-
-        if ( isset( $edd_options[ $key ] ) ) {
-            return $edd_options[ $key ];
         }
 
         return false;

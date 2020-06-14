@@ -2,6 +2,9 @@
 
 namespace DC\EDD\Bkash\Frontend;
 
+use EDD_Customer;
+use EDD_Payment;
+
 /**
  * Class Ajax
  * @package DC\EDD\Bkash\Frontend

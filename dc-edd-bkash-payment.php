@@ -188,7 +188,7 @@ final class DCoders_EDD_Bkash {
         }
 
         if ( $this->is_request( 'ajax' ) ) {
-            // require_once DC_EDD_BKASH_INCLUDES . '/class-ajax.php';
+            $this->container['ajax'] = new DC\EDD\Bkash\Frontend\Ajax();
         }
 
         $this->container['bkash_gateway'] = new DC\EDD\Bkash\EasyDigitalDownloads\Bkash_Gateway();
@@ -205,7 +205,7 @@ final class DCoders_EDD_Bkash {
         // Localize our plugin
         add_action( 'init', [ $this, 'localization_setup' ] );
 
-        // bKash does not need a CC form, so remove it.
+        // bKash does not need a CC form, so removed it.
         add_action( 'edd_dc_bkash_cc_form', '__return_false' );
     }
 
@@ -240,10 +240,6 @@ final class DCoders_EDD_Bkash {
      * @return void
      */
     public function init_classes() {
-        if ( $this->is_request( 'ajax' ) ) {
-            $this->container['ajax'] = new DC\EDD\Bkash\Frontend\Ajax();
-        }
-
         $this->container['api']    = new DC\EDD\Bkash\Api();
         $this->container['assets'] = new DC\EDD\Bkash\Assets();
     }

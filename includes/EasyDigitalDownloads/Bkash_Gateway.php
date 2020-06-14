@@ -103,6 +103,8 @@ class Bkash_Gateway {
      * Process EDD payment via bkash
      *
      * @param $purchase_data
+     *
+     * @return bool|int
      */
     public function edd_process_bkash_payment( $purchase_data ) {
         if ( ! wp_verify_nonce( $purchase_data['gateway_nonce'], 'edd-gateway' ) ) {
@@ -113,10 +115,11 @@ class Bkash_Gateway {
             );
         }
 
-        global $edd_options;
-//        echo "<pre>";
-//        print_r( $purchase_data );
-//        edd_send_to_success_page();
+        $payment = $this->insert_edd_payment( $purchase_data );
+//        edd_update_payment_status( $payment );
+
+//        edd_insert_payment_note($payment, 'test bKash trx id: ssdd');
+        wp_send_json_success(['payment' => $payment]);
     }
 
     /**
@@ -175,6 +178,7 @@ class Bkash_Gateway {
         }
 
         $data = [
+            'ajaxurl'    => admin_url( 'admin-ajax.php' ),
             'nonce'      => wp_create_nonce( 'dc-edd-bkash-nonce' ),
             'script_url' => $script,
         ];
