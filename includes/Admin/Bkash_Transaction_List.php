@@ -39,11 +39,11 @@ class Bkash_Transaction_List extends \WP_List_Table {
     public function get_columns() {
         return [
             'cb'                 => '<input type="checkbox" />',
-            'payment_id'         => __( 'Payment id', 'dc-edd-bkash' ),
+            'order_number'       => __( 'Payment History ID', 'dc-edd-bkash' ),
+            'payment_id'         => __( 'bKash Payment id', 'dc-edd-bkash' ),
             'trx_id'             => __( 'Trx id', 'dc-edd-bkash' ),
             'transaction_status' => __( 'Transaction status', 'dc-edd-bkash' ),
             'invoice_number'     => __( 'Invoice number', 'dc-edd-bkash' ),
-            'order_number'       => __( 'Order number', 'dc-edd-bkash' ),
             'amount'             => __( 'Amount', 'dc-edd-bkash' ),
             'created_at'         => __( 'Created at', 'dc-edd-bkash' ),
         ];
@@ -89,14 +89,14 @@ class Bkash_Transaction_List extends \WP_List_Table {
     }
 
     /**
-     * Render the "payment_id" column
+     * Render the "order_number" column
      *
      * @param object $item
      *
      * @return string
      */
-    public function column_payment_id( $item ) {
-        return $this->get_column_actions( $item, 'payment_id' );
+    public function column_order_number( $item ) {
+        return $this->get_column_actions( $item, 'order_number' );
     }
 
     /**
@@ -124,8 +124,10 @@ class Bkash_Transaction_List extends \WP_List_Table {
             __( 'Delete', 'dc-edd-bkash' )
         );
 
+        $payment = edd_get_payment( $item->$column_name );
+
         return sprintf(
-            '<a href="%1$s"><strong>%2$s</strong></a> %3$s', admin_url( 'admin.php?page=dc-edd-bkash&action=view&id' . $item->id ), $item->$column_name, $this->row_actions( $actions )
+            '<a href="%1$s"><strong>%2$s</strong></a> %3$s', add_query_arg( 'id', $payment->ID, admin_url( 'edit.php?post_type=download&page=edd-payment-history&view=view-order-details' ) ), $item->$column_name, $this->row_actions( $actions )
         );
     }
 
