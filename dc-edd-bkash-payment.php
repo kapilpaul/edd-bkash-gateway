@@ -3,7 +3,7 @@
 Plugin Name: DC EDD bKash Payment
 Plugin URI: https://kapilpaul.me/portfolios/plugins/dc-edd-bkash-payment
 Description: bKash payment gateway for Easy Digital Downloads.
-Version: 1.0.0
+Version: 1.0.1
 Author: Kapil Paul
 Author URI: https://kapilpaul.me
 License: GPLv2
@@ -282,6 +282,22 @@ final class DCoders_EDD_Bkash {
 } // DCoders_EDD_Bkash
 
 /**
+ * Initialize the plugin tracker
+ *
+ * @return void
+ */
+function appsero_init_tracker_dc_edd_bkash_payment() {
+    if ( ! class_exists( 'Appsero\Client' ) ) {
+        require_once __DIR__ . '/appsero/src/Client.php';
+    }
+
+    $client = new Appsero\Client( 'fa9d6616-532a-46c1-84f9-1e2d4d9bdb15', 'DC EDD bKash Payment', __FILE__ );
+
+    // Active insights
+    $client->insights()->init();
+}
+
+/**
  * Initialize the main plugin
  *
  * @return \DCoders_EDD_Bkash|bool
@@ -294,3 +310,6 @@ function dcoders_edd_bkash() {
  *  kick-off the plugin
  */
 dcoders_edd_bkash();
+
+//kick off the tracker
+appsero_init_tracker_dc_edd_bkash_payment();
